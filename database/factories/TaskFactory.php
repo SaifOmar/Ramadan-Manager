@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,6 +20,7 @@ class TaskFactory extends Factory
         return [
             'title' => fake()->name(),
             'type' => $this->randType(),
+            'user_id' => User::InRandomOrder()->first()->id,
             'status' => $this->randStatus(),
             'description' => fake()->numberBetween(0, 1) == 1 ?  fake()->sentence() : null,
             'expiry' => fake()->time(),

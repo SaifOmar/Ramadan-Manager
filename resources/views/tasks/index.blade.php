@@ -47,7 +47,7 @@
                 <div class="flex gap-3 mt-4">
 
                     <div class="mt-4">
-                        <a href="{{ route('tasks.show', $item->title) }}"
+                        <a href="{{ route('tasks.show', $item->id) }}"
                             class="bg-green-400 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded">
                             View </a>
                     </div>

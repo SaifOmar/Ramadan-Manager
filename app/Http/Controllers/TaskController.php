@@ -2,19 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\RefreshUserTasks;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class TaskController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request, RefreshUserTasks $refreshUserTasks): View
     {
-        $data = Task::all();
+        $data = $refreshUserTasks->handle($request->user());
         return view('tasks.index', compact('data'));
     }
 
@@ -39,8 +42,21 @@ class TaskController extends Controller
             'type' => 'required|string',
         ]);
         try {
+            if (!Auth::user()) {
+                return redirect()->back()->withErrors(['error' => 'You are not authorized to create a task']);
+            }
+
+            // if ($validated['expiry'] < now()) {
+            //     return redirect()->back()->withErrors(['error' => 'Task expiry time cannot be in the past']);
+            // }
+
+            $validated['user_id'] = $request->user()->id;
             $validated['status'] = 'waiting';
-            $task = Task::create($validated);
+
+            if ($validated['expiry'] < date('H:i')) {
+                $validated['status'] = 'missed';
+            }
+            Task::create($validated);
             return redirect()->back()->with('success', 'Task created successfully');
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['error' => 'Task creation failed']);
@@ -50,16 +66,26 @@ class TaskController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Request $request, Task $task): View
+    public function show(Request $request, Task $task)
     {
+        if ($task->user_id !== $request->user()->id) {
+            abort(403, 'You are not authorized to view this task');
+        }
+        if ($task->status === 'waiting' && $task->expiry < date('H:i', strtotime('+2 hour'))) {
+            $task->update(['status' => 'missed']);
+        }
         return view('tasks.show', compact('task'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Task $task): View
+    public function edit(Request $request, Task $task): View
     {
+
+        if ($task->user_id !== $request->user()->id) {
+            abort(403, 'You are not authorized to view this task');
+        }
         return view('tasks.edit', compact('task'));
         //
     }
@@ -88,6 +114,9 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
+        if ($task->user_id !== Auth::user()->id) {
+            abort(403, 'You are not authorized to view this task');
+        }
         try {
             $task->delete();
         } catch (\Exception $e) {
@@ -97,13 +126,19 @@ class TaskController extends Controller
     }
     public function complete(Task $task)
     {
+        if ($task->user_id !== Auth::user()->id) {
+            abort(403, 'You are not authorized to view this task');
+        }
         $task->update(['status' => 'done']);
         return back();
     }
 
     public function reschedule(Task $task)
     {
-        $task->update(['status' => 'waiting']);
+        if ($task->user_id !== Auth::user()->id) {
+            abort(403, 'You are not authorized to view this task');
+        }
+        $task->update(['status' => 'waiting', 'expiry' => date('H:i', strtotime('+3 hour'))]);
         return back();
     }
 }

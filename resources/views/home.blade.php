@@ -56,14 +56,14 @@
                                 <div>
                                     <h3 class="text-lg font-medium text-gray-800">{{ $task->title }}</h3>
                                     <span class="text-sm text-gray-500">Due at
-                                        {{ date('h:i A', strtotime($task->expiry)) }}</span>
+                                        {{ $task->expiry }}</span>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2">
                                 <span class="px-2 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">
                                     {{ ucfirst($task->type) }}
                                 </span>
-                                <a href="{{ route('tasks.show', $task->title) }}" class="text-gray-400 hover:text-gray-600">
+                                <a href="{{ route('tasks.show', $task->id) }}" class="text-gray-400 hover:text-gray-600">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M9 5l7 7-7 7" />
@@ -96,7 +96,7 @@
                                 <div>
                                     <h3 class="text-lg font-medium text-gray-600 line-through">{{ $task->title }}</h3>
                                     <span class="text-sm text-gray-500">Completed at
-                                        {{ $task->updated_at->format('h:i A') }}</span>
+                                        {{ $task->updated_at->subHours(24)->format('H:i') }}</span>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2">
@@ -127,7 +127,7 @@
                                     <div>
                                         <h3 class="text-lg font-medium text-red-800">{{ $task->title }}</h3>
                                         <span class="text-sm text-red-600">Missed at
-                                            {{ date('h:i A', strtotime($task->expiry)) }}</span>
+                                            {{ $task->expiry }}</span>
                                     </div>
                                 </div>
                                 <div class="flex items-center space-x-2">
