@@ -34,6 +34,7 @@ class AuthenticatedSessionController extends Controller
 
         return redirect()->intended(route('home', absolute: false));
     }
+
     public function redirectToGoogle(): RedirectResponse
     {
         return Socialite::driver('google')->redirect();
@@ -48,6 +49,7 @@ class AuthenticatedSessionController extends Controller
             Auth::login($user);
             return redirect()->route('home');
         }
+
         $user = new User;
         $user->name = $googleUser->name;
         $user->email = $googleUser->email;

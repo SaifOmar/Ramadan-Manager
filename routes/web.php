@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\TaskController;
+use App\Models\PrayerTimings;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,7 +23,6 @@ Route::prefix("tasks")->middleware('auth')->group(function () {
     Route::patch('/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
     Route::patch('/{task}/reschedule', [TaskController::class, 'reschedule'])->name('tasks.reschedule');
 });
-
 
 
 // Route::middleware('auth')->group(function () {
