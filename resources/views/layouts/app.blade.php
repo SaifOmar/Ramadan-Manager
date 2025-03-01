@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Task Manager')</title>
+    <title>@yield('title', 'Ramadan Manager')</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <style>
         @media (max-width: 768px) {
@@ -25,7 +25,7 @@
     <!-- Mobile Header -->
     <div class="md:hidden bg-white shadow-md fixed w-full z-20">
         <div class="flex items-center justify-between p-4">
-            <h1 class="text-xl font-bold text-gray-800">Task Manager</h1>
+            <h1 class="text-xl font-bold text-gray-800">Ramadan Manager</h1>
             <button onclick="toggleSidebar()" class="text-gray-600 hover:text-gray-800 focus:outline-none">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -47,7 +47,7 @@
                     </svg>
                 </button>
 
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">Task Manager</h2>
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Ramadan Manager</h2>
                 <nav class="space-y-2">
                     <a href="{{ route('home') }}"
                         class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors {{ Request::routeIs('home') ? 'bg-gray-100' : '' }}">

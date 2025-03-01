@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\PrayerTimings;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -16,8 +18,20 @@ return new class extends Migration
             $table->json('timings');
             $table->timestamps();
         });
+
+        $this->seedPrayerTimings();
     }
 
+    public function seedPrayerTimings(): void
+    {
+        $apiTimigns = Http::get('http://api.aladhan.com/v1/timingsByCity', [
+            'city' => 'Cairo',
+            'country' => 'Egypt',
+        ])->json()['data']['timings'];
+        $prayerTimings = new PrayerTimings();
+        $prayerTimings->timings = $apiTimigns;
+        $prayerTimings->save();
+    }
     /**
      * Reverse the migrations.
      */

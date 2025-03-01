@@ -13,6 +13,7 @@ class CreateStarterPacks
 {
     public function createPrayerTasks(User $user): bool
     {
+
         $prayerTimings = PrayerTimings::find(1);
         $prayers = Prayers::cases();
         $tasks = [];
@@ -33,5 +34,16 @@ class CreateStarterPacks
             }
         }
         return true;
+    }
+    public static function generateDefaultsForAllUsers(): void
+    {
+        $users = User::all();
+        foreach ($users as $user) {
+            if ($user->tasks->where('title', 'Fajr')->first()) {
+                continue;
+            }
+            $instance = new self();
+            $instance->createPrayerTasks($user);
+        }
     }
 }

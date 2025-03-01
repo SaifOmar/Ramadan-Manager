@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Days;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
@@ -12,8 +13,10 @@ class RefreshUserTasks
     {
         $tasks = $user->tasks;
         foreach ($tasks as $task) {
-            if ($task->expiry < date('H:i') && $task->status === 'waiting') {
-                $task->update(['status' => 'missed']);
+            if ($task->isToday) {
+                if ($task->expiry < date('H:i') && $task->status === 'waiting') {
+                    $task->update(['status' => 'missed']);
+                }
             }
         }
         return $tasks;

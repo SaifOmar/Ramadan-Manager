@@ -3,15 +3,12 @@
 @section('content')
     <div class="max-w-2xl mx-auto">
         <h1 class="text-3xl font-bold text-gray-800 mb-8">Create New Task</h1>
-
         <!-- Global Error Alert -->
-
         @if (session('success'))
             <div class="mb-6 bg-green-50 border border-green-500 text-green-700 p-4 rounded-lg">
                 {{ session('success') }}
             </div>
         @endif
-
         @if ($errors->any())
             <div class="mb-6 bg-red-50 border border-red-500 text-red-700 p-4 rounded-lg">
                 <p class="font-bold">Please correct the following errors:</p>
@@ -22,7 +19,6 @@
                 </ul>
             </div>
         @endif
-
         <form action="{{ route('tasks.store') }}" method="POST" class="bg-white rounded-lg shadow-md p-6">
             @csrf
             <!-- Title -->
@@ -45,6 +41,37 @@
                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
+            <!-- Weekday Selection -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-sm font-medium text-gray-700">Repeat on Days</label>
+                    <button type="button" id="toggle-all-days"
+                        class="text-sm text-blue-600 hover:text-blue-800 focus:outline-none">
+                        Unselect All
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+                    @php
+                        $weekdays = \App\Days::cases();
+                        $oldRepeats = old('repeats', array_map('strval', array_column($weekdays, 'value')));
+                    @endphp
+                    @foreach ($weekdays as $day)
+                        <div class="flex items-center p-2 border rounded-md hover:bg-gray-50">
+                            <input type="checkbox" id="weekday-{{ $day->value }}" name="repeats[]"
+                                value="{{ $day->value }}"
+                                class="weekday-checkbox h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                {{ in_array((string) $day->value, $oldRepeats) ? 'checked' : '' }}>
+                            <label for="weekday-{{ $day->value }}"
+                                class="ml-3 block text-sm text-gray-700 truncate cursor-pointer">
+                                {{ $day->name }}
+                            </label>
+                        </div>
+                    @endforeach
+                </div>
+                @error('repeats')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
             <!-- Task Type -->
             <div class="mb-6">
                 <label for="type" class="block text-sm font-medium text-gray-700 mb-2">Task Type</label>
@@ -52,7 +79,7 @@
                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('type') border-red-500 @enderror"
                     required>
                     <option value="" selected>Select a type</option>
-                    <option value="salah" {{ old('type') == 'salah' ? 'selected' : '' }}>Salah</option>
+                    <option value="salah" {{ old('type') == 'salah' ? 'selected' : '' }}>Prayer</option>
                     <option value="quran" {{ old('type') == 'quran' ? 'selected' : '' }}>Quran</option>
                     <option value="food" {{ old('type') == 'food' ? 'selected' : '' }}>Food</option>
                     <option value="work" {{ old('type') == 'work' ? 'selected' : '' }}>Work</option>
@@ -81,4 +108,61 @@
             </div>
         </form>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleAllBtn = document.getElementById('toggle-all-days');
+            const checkboxes = document.querySelectorAll('.weekday-checkbox');
+
+            // Check initial state
+            function updateToggleButtonText() {
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                toggleAllBtn.textContent = allChecked ? 'Unselect All' : 'Select All';
+                return allChecked;
+            }
+
+            // Initialize with all checkboxes checked
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+
+            let allChecked = updateToggleButtonText();
+
+            // Make labels clickable to toggle checkboxes
+            document.querySelectorAll('.weekday-checkbox + label').forEach(label => {
+                label.addEventListener('click', function(event) {
+                    const checkbox = document.getElementById(this.getAttribute('for'));
+                    checkbox.checked = !checkbox.checked;
+                    updateToggleButtonText();
+
+                    // Prevent default to avoid double toggle from label association
+                    event.preventDefault();
+                });
+            });
+
+            toggleAllBtn.addEventListener('click', function() {
+                // Toggle the state based on current state
+                allChecked = !allChecked;
+
+                // Apply the new state to all checkboxes
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = allChecked;
+                });
+
+                // Update button text
+                updateToggleButtonText();
+            });
+
+            // Make the whole div clickable
+            document.querySelectorAll('.weekday-checkbox').forEach(checkbox => {
+                const container = checkbox.closest('div');
+                container.addEventListener('click', function(e) {
+                    // Only toggle if the click wasn't directly on the checkbox (which handles itself)
+                    if (e.target !== checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        updateToggleButtonText();
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Actions\RefreshUserTasks;
+use App\Days;
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -17,8 +19,8 @@ class TaskController extends Controller
      */
     public function index(Request $request, RefreshUserTasks $refreshUserTasks): View
     {
-        $data = $refreshUserTasks->handle($request->user());
-        return view('tasks.index', compact('data'));
+        $tasks = $refreshUserTasks->handle($request->user());
+        return view('tasks.index', compact('tasks'));
     }
 
     /**
@@ -40,18 +42,16 @@ class TaskController extends Controller
             'description' => 'string|max:1000',
             'expiry' => 'required|date_format:H:i',
             'type' => 'required|string',
+            'repeats' => 'required|array',
         ]);
         try {
             if (!Auth::user()) {
                 return redirect()->back()->withErrors(['error' => 'You are not authorized to create a task']);
             }
 
-            // if ($validated['expiry'] < now()) {
-            //     return redirect()->back()->withErrors(['error' => 'Task expiry time cannot be in the past']);
-            // }
-
             $validated['user_id'] = $request->user()->id;
             $validated['status'] = 'waiting';
+            $validated['repeats'] = $this->toEnum($validated['repeats']);
 
             if ($validated['expiry'] < date('H:i')) {
                 $validated['status'] = 'missed';
@@ -59,6 +59,7 @@ class TaskController extends Controller
             Task::create($validated);
             return redirect()->back()->with('success', 'Task created successfully');
         } catch (\Exception $e) {
+            Log::error($e->getMessage());
             return redirect()->back()->withErrors(['error' => 'Task creation failed']);
         }
     }
@@ -82,6 +83,16 @@ class TaskController extends Controller
      */
     public function edit(Request $request, Task $task): View
     {
+        $reps  = $task->repeats;
+
+        $days = Days::cases();
+        foreach ($days as $index => $day) {
+
+            if (array_key_exists($index, $reps)) {
+                // dd($day);
+            }
+        }
+        // dd($day, $reps);
 
         if ($task->user_id !== $request->user()->id) {
             abort(403, 'You are not authorized to view this task');
@@ -100,11 +111,14 @@ class TaskController extends Controller
             'description' => 'required',
             'expiry' => 'required|date_format:H:i',
             'type' => 'required|string',
+            'repeats' => 'required|array',
         ]);
         try {
+            $validated['repeats'] = $this->toEnum($validated['repeats']);
             $task->update($validated);
             return redirect()->back()->with('success', 'Task updated successfully');
         } catch (\Exception $e) {
+            Log::error($e->getMessage());
             return redirect()->back()->withErrors(['error' => 'Task update failed']);
         }
     }
@@ -124,6 +138,14 @@ class TaskController extends Controller
         }
         return redirect()->route("home")->with(['success' => 'Task deleted successfully']);
     }
+    public function incomplete(Task $task)
+    {
+        if ($task->user_id !== Auth::user()->id) {
+            abort(403, 'You are not authorized to view this task');
+        }
+        $task->update(['status' => 'waiting']);
+        return back();
+    }
     public function complete(Task $task)
     {
         if ($task->user_id !== Auth::user()->id) {
@@ -140,5 +162,13 @@ class TaskController extends Controller
         }
         $task->update(['status' => 'waiting', 'expiry' => date('H:i', strtotime('+3 hour'))]);
         return back();
+    }
+    private function toEnum($days)
+    {
+        $repeats = [];
+        foreach ($days as $day) {
+            $repeats[] = Days::tryFrom($day);
+        }
+        return $repeats;
     }
 }

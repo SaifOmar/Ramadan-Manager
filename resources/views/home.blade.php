@@ -7,7 +7,7 @@
     <div class="max-w-7xl mx-auto">
         <!-- Header Section -->
         <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">My Tasks</h1>
+            <h1 class="text-3xl font-bold text-gray-800">Today's Tasks</h1>
             <a href="{{ route('tasks.create') }}"
                 class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors inline-flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -21,7 +21,7 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-white rounded-lg shadow-md p-4">
                 <h3 class="text-lg font-medium text-gray-600">Today's Tasks</h3>
-                <p class="text-2xl font-bold text-blue-600">{{ $todaysTasks ? $todaysTasks->count() : 0 }}</p>
+                <p class="text-2xl font-bold text-blue-600">{{ $tasks ? $tasks->count() : 0 }}</p>
             </div>
             <div class="bg-white rounded-lg shadow-md p-4">
                 <h3 class="text-lg font-medium text-gray-600">Completed</h3>
@@ -148,7 +148,7 @@
         @endif
     </div>
 
-    <!-- Quick Task Form -->
+    <!-- Quick Task Button -->
     <div class="fixed bottom-8 right-8">
         <button onclick="document.getElementById('quickTaskModal').classList.remove('hidden')"
             class="w-14 h-14 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-lg flex items-center justify-center">
@@ -159,7 +159,7 @@
     </div>
 
     <!-- Quick Task Modal -->
-    <div id="quickTaskModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+    <div id="quickTaskModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-medium text-gray-800">Quick Add Task</h3>
@@ -183,7 +183,7 @@
                             class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required>
                             <option value="">Type</option>
-                            <option value="salah">Salah</option>
+                            <option value="prayer">Prayer</option>
                             <option value="quran">Quran</option>
                             <option value="food">Food</option>
                             <option value="work">Work</option>
@@ -192,6 +192,18 @@
                         <input type="time" name="expiry"
                             class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Repeat on days:</label>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach (\App\Days::cases() as $day)
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" name="repeats[]" value="{{ $day->value }}"
+                                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                    <span class="ml-2 text-sm text-gray-700">{{ $day->name }}</span>
+                                </label>
+                            @endforeach
+                        </div>
                     </div>
                     <button type="submit"
                         class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
