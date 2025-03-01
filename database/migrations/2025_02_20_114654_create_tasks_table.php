@@ -23,19 +23,6 @@ return new class extends Migration
             $table->enum('status', ["done", "waiting", "missed"]);
             $table->timestamps();
         });
-        User::create([
-            'name' => 'Ahmed',
-            'email' => 'test@test.com',
-            'password' => bcrypt('testtest'),
-        ]);
-
-        Task::create([
-            'title' => 'Fajr',
-            'type' => 'salah',
-            'status' => 'waiting',
-            'expiry' => '05:00',
-            'user_id' => 1,
-        ]);
     }
 
     /**
