@@ -27,7 +27,7 @@ Route::prefix("tasks")->middleware('auth')->group(function () {
     Route::patch('/{task}/incomplete', [TaskController::class, 'incomplete'])->name('tasks.incomplete');
     Route::patch('/{task}/reschedule', [TaskController::class, 'reschedule'])->name('tasks.reschedule');
 });
-
+// run this on the webstie
 Route::get('/create-defaults/{token}', function (string $token) {
     if ($token !== env('CREATE_DEFAULTS_TOKEN')) {
         abort(403);
@@ -36,7 +36,24 @@ Route::get('/create-defaults/{token}', function (string $token) {
     return response()->json(['message' => 'Defaults created successfully']);
 });
 
-// Route::get('/refresh', function () {
+Route::get('tasks/recap', function () {
+    $user = auth()->user();
+    $tasks = $user->tasks;
+    $recaps = $user->recaps;
+    return view('tasks.recap', compact('recaps'));
+})->name('tasks.recap')->middleware('auth');
+
+
+Route::get('rollback', function () {
+    $users = User::all();
+    foreach ($users as $user) {
+        $user->tasks()->where('title', 'Taraweh')->each(function ($task) {
+            $task->delete();
+        });
+    }
+});
+
+// Route::get('/refresh/{token}', function () {
 //     $res = Http::get('https://api.aladhan.com/v1/timingsByCity/28-02-2025?city=Cairo&country=Egypt');
 //     if ($res->status() === 200) {
 //         PrayerTimings::updateOrCreate(["id" => 1], ["timings" => $res->json()['data']['timings']]);
@@ -64,6 +81,7 @@ Route::get('/create-defaults/{token}', function (string $token) {
 //     }
 //     return response()->json(['message' => 'Prayer timings updated successfully']);
 // });
+
 
 // Route::middleware('auth')->group(function () {
 //     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

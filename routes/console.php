@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Recap;
 use App\Models\PrayerTimings;
 use App\Models\Task;
 use App\Prayers;
@@ -22,12 +23,14 @@ Schedule::call(function () {
 Schedule::call(function () {
     $tasks = Task::all();
     // Updates the prayer timings for each user daily
+    $recap = new Recap();
     foreach ($tasks as $task) {
         if ($task->type === "prayer") {
             try {
                 $prayer = ucfirst($task->title);
                 $timings = PrayerTimings::find(1)->timings;
                 $task->update(['expiry' => $timings[$prayer]]);
+                $recap->save($task->user, $task);
             } catch (\Exception $e) {
                 Log::error($e->getMessage());
                 continue;
@@ -39,6 +42,7 @@ Schedule::call(function () {
                 continue;
             }
             $task->update(['status' => 'waiting']);
+            $recap->save($task->user, $task);
         }
     }
 })->dailyAt('05:00')->timezone('Africa/Cairo');

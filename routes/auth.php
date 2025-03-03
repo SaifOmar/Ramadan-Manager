@@ -25,8 +25,7 @@ Route::middleware('guest')->group(function () {
     Route::get('login/google', [AuthenticatedSessionController::class, 'redirectToGoogle'])
         ->name('login.google');
 
-    Route::get('google-callback', [AuthenticatedSessionController::class, 'handleGoogleCallback'])
-        ->name('login.google');
+    Route::get('auth/google-callback', [AuthenticatedSessionController::class, 'handleGoogleCallback']);
 });
 
 Route::middleware('auth')->group(function () {

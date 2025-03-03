@@ -16,6 +16,8 @@ class RefreshUserTasks
             if ($task->isToday) {
                 if ($task->expiry < date('H:i') && $task->status === 'waiting') {
                     $task->update(['status' => 'missed']);
+                    $recap = new Recap();
+                    $recap->save($user, $task);
                 }
             }
         }

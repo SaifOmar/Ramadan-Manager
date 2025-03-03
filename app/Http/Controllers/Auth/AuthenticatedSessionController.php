@@ -42,7 +42,7 @@ class AuthenticatedSessionController extends Controller
     public function handleGoogleCallback(): RedirectResponse
 
     {
-        $googleUser = Socialite::driver('google')->user();
+        $googleUser = Socialite::driver('google')->stateless()->user();
 
         if (User::where('email', $googleUser->email)->exists()) {
             $user = User::where('email', $googleUser->email)->first();

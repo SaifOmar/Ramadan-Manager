@@ -49,4 +49,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(Task::class);
     }
+    public function recaps()
+    {
+        return $this->hasMany(Recap::class);
+    }
 }

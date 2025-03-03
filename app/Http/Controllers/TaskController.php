@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Recap;
 use App\Actions\RefreshUserTasks;
 use App\Days;
 use App\Models\Task;
@@ -67,13 +68,14 @@ class TaskController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Request $request, Task $task)
+    public function show(Request $request, Task $task, Recap $recap): View
     {
         if ($task->user_id !== $request->user()->id) {
             abort(403, 'You are not authorized to view this task');
         }
         if ($task->status === 'waiting' && $task->expiry < date('H:i', strtotime('+2 hour'))) {
             $task->update(['status' => 'missed']);
+            $recap->save($task->user, $task);
         }
         return view('tasks.show', compact('task'));
     }
@@ -104,7 +106,7 @@ class TaskController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Task $task): RedirectResponse|View
+    public function update(Request $request, Task $task, Recap $recap): RedirectResponse|View
     {
         $validated = $request->validate([
             'title' => 'required|max:255',
@@ -116,6 +118,7 @@ class TaskController extends Controller
         try {
             $validated['repeats'] = $this->toEnum($validated['repeats']);
             $task->update($validated);
+            $recap->save($task->user, $task);
             return redirect()->back()->with('success', 'Task updated successfully');
         } catch (\Exception $e) {
             Log::error($e->getMessage());
@@ -138,29 +141,32 @@ class TaskController extends Controller
         }
         return redirect()->route("home")->with(['success' => 'Task deleted successfully']);
     }
-    public function incomplete(Task $task)
+    public function incomplete(Task $task, Recap $recap)
     {
         if ($task->user_id !== Auth::user()->id) {
             abort(403, 'You are not authorized to view this task');
         }
         $task->update(['status' => 'waiting']);
+        $recap->save($task->user, $task);
         return back();
     }
-    public function complete(Task $task)
+    public function complete(Task $task, Recap $recap)
     {
         if ($task->user_id !== Auth::user()->id) {
             abort(403, 'You are not authorized to view this task');
         }
         $task->update(['status' => 'done']);
+        $recap->save($task->user, $task);
         return back();
     }
 
-    public function reschedule(Task $task)
+    public function reschedule(Task $task, Recap $recap)
     {
         if ($task->user_id !== Auth::user()->id) {
             abort(403, 'You are not authorized to view this task');
         }
         $task->update(['status' => 'waiting', 'expiry' => date('H:i', strtotime('+3 hour'))]);
+        $recap->save($task->user, $task);
         return back();
     }
     private function toEnum($days)
